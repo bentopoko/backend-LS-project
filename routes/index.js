@@ -3,6 +3,9 @@ var router = express.Router();
 
 var userModel = require("../models/users");
 
+var bcrypt = require("bcrypt");
+var uid2 = require("uid2");
+
 /* GET home page. */
 router.get("/", function (req, res, next) {
   res.render("index", { title: "Express" });
@@ -19,8 +22,93 @@ router.get("/products/:id", function (req, res, next) {
 });
 
 // sign-up
-router.post("/users/actions/sign-up", function (req, res, next) {
-  res.json({});
+router.post("/users/actions/sign-up", async function (req, res, next) {
+  let error = [];
+  let result = false;
+  let saveUser = null;
+  let token = null;
+
+  const data = await userModel.findOne({ email: req.body.email });
+
+  if (data != null) {
+    error.push("email already registered");
+  }
+
+  for (const property in req.body) {
+    if (req.body[property] === "") {
+      error.push(`${property}: Missing field`);
+    }
+  }
+
+  let mail_valide = (email) => {
+    var regMail = new RegExp(
+      "^[a-z0-9]+([_|.|-]{1}[a-z0-9]+)*@[a-z0-9]+([_|.|-]{1}[a-z0-9]+)*[.]{1}[a-z]{2,6}$",
+      "i"
+    );
+    if (regMail.test(email)) {
+      console.log("---Mail Ok");
+    } else {
+      error.push("Invalid email address");
+    }
+  };
+
+  let mobile_valide = (mobile) => {
+    var regMobile = new RegExp(/^(06|07)[0-9]{8}/gi);
+    if (regMobile.test(mobile)) {
+      console.log("---Mobile Ok");
+    } else {
+      error.push("Invalid mobile number");
+    }
+  };
+
+  mail_valide(req.body.email);
+  mobile_valide(req.body.mobile);
+
+  if (req.body.password.length < 8) {
+    error.push("Password must be over 8 characters");
+  }
+
+  console.log(error);
+
+  if (error.length == 0) {
+    error = "No error detected";
+    var hash = bcrypt.hashSync(req.body.password, 10);
+    var newUser = new userModel({
+      firstname: req.body.firstname,
+      lastname: req.body.lastname,
+      pseudo: req.body.pseudo,
+      mobile: req.body.mobile,
+      email: req.body.email,
+      password: hash,
+      token: uid2(32),
+    });
+
+    saveUser = await newUser.save();
+
+    if (saveUser) {
+      result = true;
+      token = saveUser.token;
+
+      res.json({
+        result,
+        userLoggedIn: {
+          firstname: saveUser.firstname,
+          lastname: saveUser.lastname,
+          pseudo: saveUser.pseudo,
+          mobile: saveUser.mobile,
+          email: saveUser.email,
+          token,
+        },
+        error,
+      });
+    }
+  } else {
+    res.json({
+      result,
+      userLoggedIn: "none",
+      error,
+    });
+  }
 });
 
 // sign-in
