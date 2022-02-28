@@ -2,8 +2,6 @@ var express = require("express");
 var router = express.Router();
 
 var userModel = require("../models/users");
-var orderModel = require("../models/orders");
-var productModel = require("../models/products");
 
 var bcrypt = require("bcrypt");
 var uid2 = require("uid2");
@@ -11,26 +9,6 @@ var uid2 = require("uid2");
 /* GET home page. */
 router.get("/", function (req, res, next) {
   res.render("index", { title: "Express" });
-});
-
-// add products into the database
-router.post("/products", async function (req, res, next) {
-  console.log("/products", req.body);
-
-  var newProduct = new productModel({
-    title: req.body.title,
-    description: req.body.description,
-    price: req.body.price,
-    img: req.body.img,
-    stock: req.body.stock,
-    category: req.body.category,
-  });
-  console.log("newProduct", newProduct);
-
-  var saveProduct = await newProduct.save();
-  console.log("saveProduct", saveProduct);
-
-  res.json({ saveProduct });
 });
 
 // products list from db
@@ -53,7 +31,7 @@ router.post("/users/actions/sign-up", async function (req, res, next) {
   const data = await userModel.findOne({ email: req.body.email });
 
   if (data != null) {
-    error.push("email already registered");
+    error.push({ email: "email already registered" });
   }
 
   for (const property in req.body) {
@@ -68,9 +46,9 @@ router.post("/users/actions/sign-up", async function (req, res, next) {
       "i"
     );
     if (regMail.test(email)) {
-      console.log("---Mail Ok");
+      console.log("---Email Ok");
     } else {
-      error.push("Invalid email address");
+      error.push({ email: "Invalid email address" });
     }
   };
 
@@ -79,7 +57,7 @@ router.post("/users/actions/sign-up", async function (req, res, next) {
     if (regMobile.test(mobile)) {
       console.log("---Mobile Ok");
     } else {
-      error.push("Invalid mobile number");
+      error.push({ mobile: "Invalid mobile number" });
     }
   };
 
@@ -87,7 +65,7 @@ router.post("/users/actions/sign-up", async function (req, res, next) {
   mobile_valide(req.body.mobile);
 
   if (req.body.password.length < 8) {
-    error.push("Password must be over 8 characters");
+    error.push({ password: "Password must be over 8 characters" });
   }
 
   console.log(error);
@@ -127,7 +105,6 @@ router.post("/users/actions/sign-up", async function (req, res, next) {
   } else {
     res.json({
       result,
-      userLoggedIn: "none",
       error,
     });
   }
@@ -139,39 +116,8 @@ router.post("/users/actions/sign-in", function (req, res, next) {
 });
 
 // order registration
-router.post("/orders", async function (req, res, next) {
-  console.log("/orders", req.body);
-
-  var userFind = await userModel.findOne({
-    token: req.body.token,
-  });
-  console.log("userFind", userFind);
-
-  var productFind = await productModel.find({
-    userToken: userFind.token,
-  });
-  console.log("userFind", userFind);
-
-  var newOrder = new orderModel({
-    product: [
-      {
-        productID: productFind._id,
-        qty: req.body.qty,
-      },
-    ],
-    clientToken: userFind.token,
-    dateInsert: req.body.date_insert,
-    statusPayment: req.body.status_payment,
-    datePayment: req.body.date_payment,
-    timePicker: req.body.time_picker,
-    statusDelivery: req.body.status_delivery,
-    statusPreparation: req.body.status_preparation,
-  });
-
-  var saveOrder = await newOrder.save();
-  console.log("saveOrder", saveOrder);
-
-  res.json({ saveOrder });
+router.post("/orders", function (req, res, next) {
+  res.json({});
 });
 
 // orders history by user ID
