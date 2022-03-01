@@ -38,7 +38,11 @@ router.post("/users/actions/sign-up", async function (req, res, next) {
 
   for (const property in req.body) {
     if (req.body[property] === "") {
-      error.push({ [property]: "Missing field" });
+      error.push({
+        [property]: `${
+          property.charAt(0).toUpperCase() + property.slice(1)
+        }: Missing field`,
+      });
     }
   }
 
