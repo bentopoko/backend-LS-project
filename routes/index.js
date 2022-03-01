@@ -28,6 +28,8 @@ router.post("/users/actions/sign-up", async function (req, res, next) {
   let saveUser = null;
   let token = null;
 
+  console.log("---req.body", req.body);
+
   const data = await userModel.findOne({ email: req.body.email });
 
   if (data != null) {
@@ -36,7 +38,7 @@ router.post("/users/actions/sign-up", async function (req, res, next) {
 
   for (const property in req.body) {
     if (req.body[property] === "") {
-      error.push(`${property}: Missing field`);
+      error.push({ [property]: "Missing field" });
     }
   }
 
@@ -68,7 +70,7 @@ router.post("/users/actions/sign-up", async function (req, res, next) {
     error.push({ password: "Password must be over 8 characters" });
   }
 
-  console.log(error);
+  console.log("---error=>", error);
 
   if (error.length == 0) {
     error = "No error detected";
