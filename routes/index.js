@@ -10,7 +10,7 @@ var uid2 = require("uid2");
 
 /* GET home page. */
 router.get("/", function (req, res, next) {
-  res.json({});
+  res.json();
 });
 
 // add products into the database
