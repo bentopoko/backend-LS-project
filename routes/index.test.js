@@ -10,6 +10,8 @@ test("user token registration", async () => {
     .send({
       firstname: "john",
       lastname: "doe",
+      mobile: "0606060606",
+      email: "j@debug.com",
       pseudo: "wallace",
       password: "fdgdgfghfjjghjgjhyt65",
     });
@@ -23,10 +25,12 @@ test("password_validation over 8 characters", async () => {
     .send({
       firstname: "john",
       lastname: "doe",
+      mobile: "0606060606",
+      email: "j@debug.com",
       pseudo: "wallace",
-      password: "2143256547565785jh",
+      password: "fdgdgfghfjjghjgjhyt65",
     });
-  expect(typeof response.body.token).toBe("string");
+  expect(typeof response.body.userLoggedIn.token).toBe("string");
 });
 
 test("password_error below 8 characters", async () => {
