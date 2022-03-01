@@ -3,7 +3,7 @@ const request = require("supertest");
 
 const app = require("../app");
 
-test("user token registration", async () => {
+test("user_token_registration", async () => {
   const response = await request(app)
     .post("/users/actions/sign-up")
 
@@ -11,11 +11,11 @@ test("user token registration", async () => {
       firstname: "john",
       lastname: "doe",
       mobile: "0606060606",
-      email: "j@debug.com",
+      email: "jd1@debug.com",
       pseudo: "wallace",
-      password: "fdgdgfghfjjghjgjhyt65",
+      password: "f12345678",
     });
-  expect(typeof response.body.token).toBe("string");
+  expect(typeof response.body.userLoggedIn.token).toBe("string");
 });
 
 test("password_validation over 8 characters", async () => {
@@ -26,9 +26,9 @@ test("password_validation over 8 characters", async () => {
       firstname: "john",
       lastname: "doe",
       mobile: "0606060606",
-      email: "j@debug.com",
+      email: "jdw2@debug.com",
       pseudo: "wallace",
-      password: "fdgdgfghfjjghjgjhyt65",
+      password: "12345678",
     });
   expect(typeof response.body.userLoggedIn.token).toBe("string");
 });
@@ -40,8 +40,13 @@ test("password_error below 8 characters", async () => {
     .send({
       firstname: "john",
       lastname: "doe",
+      mobile: "0606060606",
+      email: "jdw1@debug.com",
       pseudo: "wallace",
-      password: "214325",
+      password: "aaa",
     })
-    .expect({ result: false, err: "ups... invalid password" });
+    .expect({
+      result: false,
+      error: [{ password: "Password must be over 8 characters" }],
+    });
 });
