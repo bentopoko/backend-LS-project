@@ -10,7 +10,7 @@ var uid2 = require("uid2");
 
 /* GET home page. */
 router.get("/", function (req, res, next) {
-  res.render("index", { title: "Express" });
+  res.json({});
 });
 
 // add products into the database
@@ -40,8 +40,8 @@ router.post("/products-insert", async function (req, res, next) {
 });
 
 // products list from db
-router.get("/productsFindByCategory", async function (req, res, next) {
-  console.log("/productsFindByCategory", req.query);
+router.get("/products-find-by-category", async function (req, res, next) {
+  console.log("/products-find-by-category", req.query);
 
   var result = false;
 
