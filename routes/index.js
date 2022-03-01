@@ -2,6 +2,8 @@ var express = require("express");
 var router = express.Router();
 
 var userModel = require("../models/users");
+var productModel = require("../models/products");
+var orderModel = require("../models/orders");
 
 var bcrypt = require("bcrypt");
 var uid2 = require("uid2");
@@ -11,14 +13,64 @@ router.get("/", function (req, res, next) {
   res.render("index", { title: "Express" });
 });
 
+// add products into the database
+router.post("/products-insert", async function (req, res, next) {
+  console.log("/products-insert", req.body);
+
+  var result = false;
+
+  var newProduct = new productModel({
+    title: req.body.title,
+    description: req.body.description,
+    price: req.body.price,
+    img: req.body.img,
+    stock: req.body.stock,
+    category: req.body.category,
+  });
+  console.log("newProduct", newProduct);
+
+  var saveProduct = await newProduct.save();
+  console.log("saveProduct", saveProduct);
+
+  if (saveProduct) {
+    result = true;
+  }
+
+  res.json({ result, saveProduct });
+});
+
 // products list from db
-router.get("/products", function (req, res, next) {
-  res.json({});
+router.get("/products-find", async function (req, res, next) {
+  console.log("/products-find", req.query);
+
+  var result = false;
+
+  var productFind = await productModel.find({
+    productCategory: req.query.productCategory,
+  });
+  console.log("productFind", productFind);
+
+  if (productFind) {
+    result = true;
+  }
+
+  res.json({ result, productFind });
 });
 
 // product from db by ID
-router.get("/products/:id", function (req, res, next) {
-  res.json({});
+router.get("/products/:id", async function (req, res, next) {
+  console.log("/products/:id", req.params);
+
+  var result = false;
+
+  var productFindID = await productModel.findById(req.params.id);
+  console.log("productFindID", productFindID);
+
+  if (productFindID) {
+    result = true;
+  }
+
+  res.json({ result, productFindID });
 });
 
 // sign-up
@@ -116,13 +168,61 @@ router.post("/users/actions/sign-in", function (req, res, next) {
 });
 
 // order registration
-router.post("/orders", function (req, res, next) {
-  res.json({});
+router.post("/orders", async function (req, res, next) {
+  console.log("/orders", req.body);
+
+  var result = false;
+
+  var userFind = await userModel.findOne({
+    token: req.body.token,
+  });
+  console.log("userFind", userFind);
+
+  var productFind = await productModel.find({
+    productID: req.body.productID,
+  });
+  console.log("userFind", userFind);
+
+  var newOrder = new orderModel({
+    product: [
+      {
+        productID: productFind._id,
+        qty: req.body.qty,
+      },
+    ],
+    clientToken: userFind.token,
+    dateInsert: req.body.date_insert,
+    statusPayment: req.body.status_payment,
+    datePayment: req.body.date_payment,
+    timePicker: req.body.time_picker,
+    statusDelivery: req.body.status_delivery,
+    statusPreparation: req.body.status_preparation,
+  });
+
+  var saveOrder = await newOrder.save();
+  console.log("saveOrder", saveOrder);
+
+  if (saveOrder) {
+    result = true;
+  }
+
+  res.json({ result, saveOrder });
 });
 
 // orders history by user ID
-router.get("/orders/users/:id", function (req, res, next) {
-  res.json({});
+router.get("/orders/users/:id", async function (req, res, next) {
+  console.log("/orders/users/:id", req.params);
+
+  var result = false;
+
+  var ordersFindID = await orderModel.findById(req.params.id);
+  console.log("ordersFindID", ordersFindID);
+
+  if (ordersFindID) {
+    result = true;
+  }
+
+  res.json({ result, ordersFindID });
 });
 
 // profile by user Id (slide 15)
