@@ -40,8 +40,8 @@ router.post("/products-insert", async function (req, res, next) {
 });
 
 // products list from db
-router.get("/products-find", async function (req, res, next) {
-  console.log("/products-find", req.query);
+router.get("/productsFindByCategory", async function (req, res, next) {
+  console.log("/productsFindByCategory", req.query);
 
   var result = false;
 
