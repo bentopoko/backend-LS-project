@@ -78,7 +78,7 @@ router.get("/products/:id", async function (req, res, next) {
 
 // sign-up
 router.post("/users/actions/sign-up", async function (req, res, next) {
-  let error = [];
+  let error = {};
   let result = false;
   let saveUser = null;
   let token = null;
@@ -88,16 +88,12 @@ router.post("/users/actions/sign-up", async function (req, res, next) {
   const data = await userModel.findOne({ email: req.body.email });
 
   if (data != null) {
-    error.push({ email: "email already registered" });
+    error.email = "Email already registered";
   }
 
   for (const property in req.body) {
     if (req.body[property] === "") {
-      error.push({
-        [property]: `${
-          property.charAt(0).toUpperCase() + property.slice(1)
-        }: Missing field`,
-      });
+      error[property] = "Missing field";
     }
   }
 
@@ -109,7 +105,7 @@ router.post("/users/actions/sign-up", async function (req, res, next) {
     if (regMail.test(email)) {
       console.log("---Email Ok");
     } else {
-      error.push({ email: "Invalid email address" });
+      error.email = "Invalid email address";
     }
   };
 
@@ -118,7 +114,7 @@ router.post("/users/actions/sign-up", async function (req, res, next) {
     if (regMobile.test(mobile)) {
       console.log("---Mobile Ok");
     } else {
-      error.push({ mobile: "Invalid mobile number" });
+      error.mobile = "Invalid mobile number";
     }
   };
 
@@ -126,12 +122,12 @@ router.post("/users/actions/sign-up", async function (req, res, next) {
   mobile_valide(req.body.mobile);
 
   if (req.body.password.length < 8) {
-    error.push({ password: "Password must be over 8 characters" });
+    error.password = "Password must be over 8 characters";
   }
 
   console.log("---error=>", error);
 
-  if (error.length == 0) {
+  if (Object.keys(error).length === 0) {
     error = "No error detected";
     var hash = bcrypt.hashSync(req.body.password, 10);
     var newUser = new userModel({
@@ -148,7 +144,6 @@ router.post("/users/actions/sign-up", async function (req, res, next) {
 
     if (saveUser) {
       result = true;
-      token = saveUser.token;
 
       res.json({
         result,
@@ -158,7 +153,7 @@ router.post("/users/actions/sign-up", async function (req, res, next) {
           pseudo: saveUser.pseudo,
           mobile: saveUser.mobile,
           email: saveUser.email,
-          token,
+          token: saveUser.token,
         },
         error,
       });
@@ -172,8 +167,52 @@ router.post("/users/actions/sign-up", async function (req, res, next) {
 });
 
 // sign-in
-router.post("/users/actions/sign-in", function (req, res, next) {
-  res.json({});
+router.post("/users/actions/sign-in", async function (req, res, next) {
+  console.log("---in route sign, req.body =>", req.body);
+  let result = false;
+  let user = null;
+  let error = {};
+
+  for (const property in req.body) {
+    if (req.body[property] === "") {
+      error[property] = "Missing field";
+    }
+  }
+
+  if (Object.keys(error).length === 0) {
+    user = await userModel.findOne({ email: req.body.email });
+    console.log("---user in sign in =>", user);
+
+    if (user) {
+      if (bcrypt.compareSync(req.body.password, user.password)) {
+        error = "No error detected";
+        result = true;
+        token = user.token;
+        user = {
+          firstname: user.firstname,
+          lastname: user.lastname,
+          pseudo: user.pseudo,
+          mobile: user.mobile,
+          email: user.email,
+          token: user.token,
+        };
+      } else {
+        result = false;
+        user = null;
+        error.password = "Incorrect Password";
+      }
+    } else {
+      error.email = "Email not registered";
+    }
+  }
+
+  console.log("---error in sign in=>", error);
+
+  res.json({
+    result,
+    error,
+    userLoggedIn: user,
+  });
 });
 
 // order registration

@@ -18,7 +18,7 @@ test("user_token_registration", async () => {
   expect(typeof response.body.userLoggedIn.token).toBe("string");
 });
 
-test("password_validation over 8 characters", async () => {
+test("password_validation_over_8_characters", async () => {
   const response = await request(app)
     .post("/users/actions/sign-up")
 
@@ -33,7 +33,7 @@ test("password_validation over 8 characters", async () => {
   expect(typeof response.body.userLoggedIn.token).toBe("string");
 });
 
-test("password_error below 8 characters", async () => {
+test("password_error_below_8_characters", async () => {
   const response = await request(app)
     .post("/users/actions/sign-up")
 
@@ -47,6 +47,6 @@ test("password_error below 8 characters", async () => {
     })
     .expect({
       result: false,
-      error: [{ password: "Password must be over 8 characters" }],
+      error: { password: "Password must be over 8 characters" },
     });
 });
