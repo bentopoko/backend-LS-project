@@ -34,9 +34,10 @@ router.post("/products-insert", async function (req, res, next) {
 
   if (saveProduct) {
     result = true;
+    res.json({ result, saveProduct });
+  } else {
+    res.json({ result });
   }
-
-  res.json({ result, saveProduct });
 });
 
 // products list from db
@@ -52,9 +53,10 @@ router.get("/products-find-by-category", async function (req, res, next) {
 
   if (productFind) {
     result = true;
+    res.json({ result, productFind });
+  } else {
+    res.json({ result });
   }
-
-  res.json({ result, productFind });
 });
 
 // product from db by ID
@@ -68,9 +70,10 @@ router.get("/products/:id", async function (req, res, next) {
 
   if (productFindID) {
     result = true;
+    res.json({ result, productFindID });
+  } else {
+    res.json({ result });
   }
-
-  res.json({ result, productFindID });
 });
 
 // sign-up
@@ -210,9 +213,10 @@ router.post("/orders", async function (req, res, next) {
 
   if (saveOrder) {
     result = true;
+    res.json({ result, saveOrder });
+  } else {
+    res.json({ result });
   }
-
-  res.json({ result, saveOrder });
 });
 
 // orders history by user ID
@@ -226,9 +230,10 @@ router.get("/orders/users/:id", async function (req, res, next) {
 
   if (ordersFindID) {
     result = true;
+    res.json({ result, ordersFindID });
+  } else {
+    res.json({ result });
   }
-
-  res.json({ result, ordersFindID });
 });
 
 // profile by user Id (slide 15)
