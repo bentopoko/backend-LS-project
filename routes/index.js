@@ -46,14 +46,40 @@ router.get("/products-find-by-category", async function (req, res, next) {
 
   var result = false;
 
-  var productFind = await productModel.find({
-    productCategory: req.query.productCategory,
+  var productFindPlatJour = await productModel.find({
+    "category.name": "PLAT ET DESSERT DU JOUR",
   });
-  console.log("productFind", productFind);
+  console.log("productFindPlatJour", productFindPlatJour);
 
-  if (productFind) {
+  var productFindSandwichs = await productModel.find({
+    "category.name": "SANDWICHS",
+  });
+  console.log("productFindSandwichs", productFindSandwichs);
+
+  var productFindDesserts = await productModel.find({
+    "category.name": "DESSERTS",
+  });
+  console.log("productFindDesserts", productFindDesserts);
+
+  var data = [
+    {
+      category: "PLAT ET DESSERT DU JOUR",
+      products: productFindPlatJour,
+    },
+    {
+      category: "SANDWICHS",
+      products: productFindSandwichs,
+    },
+    {
+      category: "DESSERTS",
+      products: productFindDesserts,
+    },
+  ];
+  console.log("data", data);
+
+  if (data) {
     result = true;
-    res.json({ result, productFind });
+    res.json({ result, data });
   } else {
     res.json({ result });
   }
