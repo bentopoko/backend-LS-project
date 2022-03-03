@@ -207,7 +207,6 @@ router.post("/users/actions/sign-in", async function (req, res, next) {
 
   if (Object.keys(error).length === 0) {
     user = await userModel.findOne({ email: req.body.email });
-    console.log("---user in sign in =>", user);
 
     if (user) {
       if (bcrypt.compareSync(req.body.password, user.password)) {
