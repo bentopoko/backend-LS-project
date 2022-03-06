@@ -7,7 +7,7 @@ const orderSchema = mongoose.Schema({
       qty: Number,
     },
   ],
-  clientToken: { type: mongoose.Schema.Types.ObjectId, ref: "users" },
+  userID: { type: mongoose.Schema.Types.ObjectId, ref: "users" },
   dateInsert: Date,
   statusPayment: Boolean,
   datePayment: Date,

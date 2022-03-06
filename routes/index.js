@@ -1,6 +1,14 @@
 var express = require("express");
 var router = express.Router();
 
+const dateFormat = function (date) {
+  if (date) {
+    return `${date.getDate()}/${
+      date.getMonth() + 1
+    }/${date.getFullYear()}-${date.getHours()}:${date.getMinutes()}`;
+  }
+};
+
 var userModel = require("../models/users");
 var productModel = require("../models/products");
 var orderModel = require("../models/orders");
@@ -207,6 +215,7 @@ router.post("/users/actions/sign-in", async function (req, res, next) {
 
   if (Object.keys(error).length === 0) {
     user = await userModel.findOne({ email: req.body.email });
+    console.log("---user =>", user);
 
     if (user) {
       if (bcrypt.compareSync(req.body.password, user.password)) {
@@ -284,17 +293,31 @@ router.post("/orders", async function (req, res, next) {
 });
 
 // orders history by user ID
-router.get("/orders/users/:id", async function (req, res, next) {
-  console.log("/orders/users/:id", req.params);
+router.get("/orders/users/:token", async function (req, res, next) {
+  console.log("---/orders/users/:token =>", req.params.token);
 
   var result = false;
 
-  var ordersFindID = await orderModel.findById(req.params.id);
-  console.log("ordersFindID", ordersFindID);
+  var user = await userModel.findOne({ token: req.params.token });
+  console.log("---user =>", user);
 
-  if (ordersFindID) {
+  var orders = await orderModel.findOne({ userID: user._id });
+  console.log("---orders =>", orders);
+
+  console.log("#0", typeof orders.date_insert);
+  orders.date_insert = dateFormat(orders.date_insert);
+  console.log("#1", orders.date_insert);
+
+  // var orders = await orderModel
+  //   .findOne({ userID: user._id })
+  //   .populate("users")
+  //   .populate("products")
+  //   .exec();
+  // console.log("---orders=>", orders);
+
+  if (orders) {
     result = true;
-    res.json({ result, ordersFindID });
+    res.json({ result, orders });
   } else {
     res.json({ result });
   }
