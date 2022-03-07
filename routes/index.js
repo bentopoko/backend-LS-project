@@ -5,13 +5,23 @@ const dateFormat = function (date) {
   if (date) {
     return `${date.getDate()}/${
       date.getMonth() + 1
-    }/${date.getFullYear()}-${date.getHours()}:${date.getMinutes()}`;
+    }/${date.getFullYear()} at ${date.getHours()}h ${date.getMinutes()}mn`;
   }
 };
 
 var userModel = require("../models/users");
 var productModel = require("../models/products");
 var orderModel = require("../models/orders");
+
+var cloudinary = require("cloudinary").v2;
+cloudinary.config({
+  cloud_name: "dybetiefg",
+  api_key: "791592437235491",
+  api_secret: "4WEmESs6sIbX2YPVHSMC-vmlS3w",
+});
+
+var fs = require("fs");
+var uniqid = require("uniqid");
 
 var bcrypt = require("bcrypt");
 var uid2 = require("uid2");
@@ -172,6 +182,7 @@ router.post("/users/actions/sign-up", async function (req, res, next) {
       email: req.body.email,
       password: hash,
       token: uid2(32),
+      uri: "https://res.cloudinary.com/ds8shlqh0/image/upload/v1646644747/blankpp_vaslek.jpg",
     });
 
     saveUser = await newUser.save();
@@ -188,6 +199,7 @@ router.post("/users/actions/sign-up", async function (req, res, next) {
           mobile: saveUser.mobile,
           email: saveUser.email,
           token: saveUser.token,
+          uri: saveUser.uri,
         },
         error,
       });
@@ -229,6 +241,7 @@ router.post("/users/actions/sign-in", async function (req, res, next) {
           mobile: user.mobile,
           email: user.email,
           token: user.token,
+          uri: user.uri,
         };
       } else {
         result = false;
@@ -247,6 +260,38 @@ router.post("/users/actions/sign-in", async function (req, res, next) {
     error,
     userLoggedIn: user,
   });
+});
+
+router.post("/users/uploadpp", async function (req, res, next) {
+  // console.log("---/upload route, req.files =>", req.files);
+  // console.log("---/upload route, req.body =>", req.body);
+
+  var imagePath = `./tmp/user_avatar_${uniqid()}.jpg`;
+
+  var resultCopy = await req.files.avatar.mv(imagePath);
+
+  var resultCloudinary = await cloudinary.uploader.upload(imagePath);
+  console.log("---resultCloudinary =>", resultCloudinary);
+
+  fs.unlinkSync(imagePath);
+
+  await userModel.updateOne(
+    { token: req.body.token },
+    { uri: resultCloudinary.secure_url }
+  );
+
+  let userUpdated = await userModel.findOne({ token: req.body.token });
+  console.log("---userUpdated =>", userUpdated);
+
+  if (!resultCopy) {
+    res.json({
+      result: true,
+      message: "File Uploaded",
+      userUpdated: userUpdated,
+    });
+  } else {
+    res.json({ result: false, message: resultCopy });
+  }
 });
 
 // order registration
@@ -293,7 +338,7 @@ router.post("/orders", async function (req, res, next) {
 });
 
 // orders history by user ID
-router.get("/orders/users/:token", async function (req, res, next) {
+router.get("/orders/user/:token", async function (req, res, next) {
   console.log("---/orders/users/:token =>", req.params.token);
 
   var result = false;
@@ -301,21 +346,25 @@ router.get("/orders/users/:token", async function (req, res, next) {
   var user = await userModel.findOne({ token: req.params.token });
   console.log("---user =>", user);
 
-  var orders = await orderModel.findOne({ userID: user._id });
+  var ordersFromDB = await orderModel
+    .find({ userID: user._id })
+    .populate("products.productID")
+    .exec();
+
+  console.log("---ordersFromDB", ordersFromDB);
+
+  let orders = [];
+  if (ordersFromDB) {
+    for (let i = 0; i < ordersFromDB.length; i++) {
+      const order = ordersFromDB[i].toObject();
+      order.date_insert = dateFormat(order.date_insert);
+      order.time_picker = dateFormat(order.time_picker);
+      orders.push(order);
+    }
+  }
   console.log("---orders =>", orders);
 
-  console.log("#0", typeof orders.date_insert);
-  orders.date_insert = dateFormat(orders.date_insert);
-  console.log("#1", orders.date_insert);
-
-  // var orders = await orderModel
-  //   .findOne({ userID: user._id })
-  //   .populate("users")
-  //   .populate("products")
-  //   .exec();
-  // console.log("---orders=>", orders);
-
-  if (orders) {
+  if (ordersFromDB) {
     result = true;
     res.json({ result, orders });
   } else {

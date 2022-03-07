@@ -1,3 +1,4 @@
+var fileUpload = require("express-fileupload");
 var express = require("express");
 var path = require("path");
 var cookieParser = require("cookie-parser");
@@ -9,6 +10,7 @@ var usersRouter = require("./routes/users");
 require("./models/dbconnection");
 
 var app = express();
+app.use(fileUpload());
 
 app.use(logger("dev"));
 app.use(express.json());
