@@ -296,38 +296,34 @@ router.post("/users/uploadpp", async function (req, res, next) {
 
 // order registration
 router.post("/orders", async function (req, res, next) {
-  console.log("/orders", req.body);
+  console.log("---/orders, req.body =>", req.body);
 
   var result = false;
 
-  var userFind = await userModel.findOne({
+  var user = await userModel.findOne({
     token: req.body.token,
   });
-  console.log("userFind", userFind);
+  console.log("---user =>", user);
 
-  var productFind = await productModel.find({
-    productID: req.body.productID,
-  });
-  console.log("userFind", userFind);
+  // let productsList = [];
+  // for (let i = 0; i < req.body.products.length; i++) {
+  //   productsList.push();
+  // }
+  // console.log("---productsList =>", productsList);
 
   var newOrder = new orderModel({
-    product: [
-      {
-        productID: productFind._id,
-        qty: req.body.qty,
-      },
-    ],
-    clientToken: userFind.token,
-    dateInsert: req.body.date_insert,
-    statusPayment: req.body.status_payment,
-    datePayment: req.body.date_payment,
-    timePicker: req.body.time_picker,
-    statusDelivery: req.body.status_delivery,
-    statusPreparation: req.body.status_preparation,
+    products: req.body.products,
+    userID: user._id,
+    date_insert: req.body.date_insert,
+    status_payment: req.body.status_payment,
+    date_payment: req.body.date_payment,
+    time_picker: req.body.time_picker,
+    status_delivery: req.body.status_delivery,
+    status_preparation: req.body.status_preparation,
   });
 
   var saveOrder = await newOrder.save();
-  console.log("saveOrder", saveOrder);
+  // console.log("saveOrder", saveOrder);
 
   if (saveOrder) {
     result = true;

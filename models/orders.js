@@ -8,12 +8,12 @@ const orderSchema = mongoose.Schema({
     },
   ],
   userID: { type: mongoose.Schema.Types.ObjectId, ref: "users" },
-  dateInsert: Date,
-  statusPayment: Boolean,
-  datePayment: Date,
-  timePicker: Date,
-  statusDelivery: Boolean,
-  statusPreparation: Boolean,
+  date_insert: Date,
+  status_payment: Boolean,
+  date_payment: Date,
+  time_picker: Date,
+  status_delivery: Boolean,
+  status_preparation: Boolean,
 });
 
 const orderModel = mongoose.model("orders", orderSchema);
