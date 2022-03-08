@@ -368,6 +368,45 @@ router.get("/orders/user/:token", async function (req, res, next) {
   }
 });
 
+//loyalty by orders
+router.get("/user/my-s-points/:token", async function (req, res, next) {
+  console.log("---/user/my-s-points/:token =>", req.params.token);
+
+  var result = false;
+
+  var user = await userModel.findOne({ token: req.params.token });
+  console.log("---user =>", user);
+
+  var ordersFromDB = await orderModel
+    .find({ userID: user._id })
+    .populate("products.productID")
+    .exec();
+
+  console.log("---ordersFromDB", ordersFromDB);
+
+  console.log("--zen =>", ordersFromDB[0].products[0].qty);
+  console.log("--zen2 =>", ordersFromDB[0].products[0].productID.price);
+
+  let total = 0;
+  for (let i = 0; i < ordersFromDB.length; i++) {
+    for (let j = 0; j < ordersFromDB[i].products.length; j++) {
+      total =
+        ordersFromDB[i].products[j].qty *
+          ordersFromDB[i].products[j].productID.price +
+        total;
+      console.log("---total in Da boucle", total);
+    }
+  }
+  total = Math.round(total);
+
+  if (ordersFromDB) {
+    result = true;
+    res.json({ result, spoints: total });
+  } else {
+    res.json({ result });
+  }
+});
+
 // profile by user Id (slide 15)
 router.get("/users/:id", function (req, res, next) {
   res.json({});
