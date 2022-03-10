@@ -384,27 +384,43 @@ router.get("/user/my-s-points/:token", async function (req, res, next) {
 
   console.log("---ordersFromDB", ordersFromDB);
 
-  console.log("--zen =>", ordersFromDB[0].products[0].qty);
-  console.log("--zen2 =>", ordersFromDB[0].products[0].productID.price);
+  if (ordersFromDB.length > 0) {
+    console.log("--zen =>", ordersFromDB[0].products[0].qty);
+    console.log("--zen2 =>", ordersFromDB[0].products[0].productID.price);
 
-  let total = 0;
-  for (let i = 0; i < ordersFromDB.length; i++) {
-    for (let j = 0; j < ordersFromDB[i].products.length; j++) {
-      total =
-        ordersFromDB[i].products[j].qty *
-          ordersFromDB[i].products[j].productID.price +
-        total;
-      console.log("---total in Da boucle", total);
+    let total = 0;
+    for (let i = 0; i < ordersFromDB.length; i++) {
+      for (let j = 0; j < ordersFromDB[i].products.length; j++) {
+        total =
+          ordersFromDB[i].products[j].qty *
+            ordersFromDB[i].products[j].productID.price +
+          total;
+
+        console.log(
+          "---ordersFromDB[i].products[j].productID.title",
+          ordersFromDB[i].products[j].productID.title
+        );
+        console.log(
+          "---ordersFromDB[i].products[j].productID.price",
+          ordersFromDB[i].products[j].productID.price
+        );
+
+        console.log("---total in Da boucle", total);
+      }
     }
-  }
-  total = Math.round(total);
-
-  if (ordersFromDB) {
+    total = Math.round(total);
     result = true;
     res.json({ result, spoints: total });
   } else {
     res.json({ result });
   }
+
+  // if (ordersFromDB) {
+  //   result = true;
+  //   res.json({ result, spoints: total });
+  // } else {
+  //   res.json({ result });
+  // }
 });
 
 // profile by user Id (slide 15)
