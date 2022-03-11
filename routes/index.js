@@ -383,25 +383,26 @@ router.post("/orders", async function (req, res, next) {
   // }
   // console.log("---productsList =>", productsList);
 
-  var newOrder = new orderModel({
-    products: req.body.products,
-    userID: user._id,
-    date_insert: req.body.date_insert,
-    status_payment: req.body.status_payment,
-    date_payment: req.body.date_payment,
-    time_picker: req.body.time_picker,
-    status_delivery: req.body.status_delivery,
-    status_preparation: req.body.status_preparation,
-  });
+  if (user) {
+    var newOrder = new orderModel({
+      products: req.body.products,
+      userID: user._id,
+      date_insert: req.body.date_insert,
+      status_payment: req.body.status_payment,
+      date_payment: req.body.date_payment,
+      time_picker: req.body.time_picker,
+      status_delivery: req.body.status_delivery,
+      status_preparation: req.body.status_preparation,
+    });
 
-  var saveOrder = await newOrder.save();
-  // console.log("saveOrder", saveOrder);
-
-  if (saveOrder) {
-    result = true;
-    res.json({ result, saveOrder });
-  } else {
-    res.json({ result });
+    var saveOrder = await newOrder.save();
+    // console.log("saveOrder", saveOrder);
+    if (saveOrder) {
+      result = true;
+      res.json({ result, saveOrder });
+    } else {
+      res.json({ result });
+    }
   }
 });
 
