@@ -1,5 +1,9 @@
 var express = require("express");
 var router = express.Router();
+const Stripe = require("stripe");
+const stripe = Stripe(
+  "sk_test_51KHmV0CkoFyczhrXJGzhjFxOOjO1KIs8Y6C7vmWlqWI2edHPfITMItsg8raT8m2T6DdmwdN0gGbfaagFDiEH356J00O3a3kwqg"
+);
 
 const dateFormat = function (date) {
   if (date) {
@@ -29,6 +33,74 @@ var uid2 = require("uid2");
 /* GET home page. */
 router.get("/", function (req, res, next) {
   res.json();
+});
+
+// stripe route
+router.post("/create-payment-intent", async (req, res) => {
+  console.log("req.body =>", req.body);
+  const { paymentMethodType, currency, paymentMethodOptions } = req.body;
+
+  // Each payment method type has support for different currencies. In order to
+  // support many payment method types and several currencies, this server
+  // endpoint accepts both the payment method type and the currency as
+  // parameters.
+  //
+  // Some example payment method types include `card`, `ideal`, and `alipay`.
+  const params = {
+    payment_method_types: [paymentMethodType],
+    amount: 1999,
+    currency: currency,
+  };
+
+  // If this is for an ACSS payment, we add payment_method_options to create
+  // the Mandate.
+  if (paymentMethodType === "acss_debit") {
+    params.payment_method_options = {
+      acss_debit: {
+        mandate_options: {
+          payment_schedule: "sporadic",
+          transaction_type: "personal",
+        },
+      },
+    };
+  } else if (paymentMethodType === "konbini") {
+    /**
+     * Default value of the payment_method_options
+     */
+    params.payment_method_options = {
+      konbini: {
+        product_description: "Tシャツ",
+        expires_after_days: 3,
+      },
+    };
+  }
+
+  /**
+   * If API given this data, we can overwride it
+   */
+  if (paymentMethodOptions) {
+    params.payment_method_options = paymentMethodOptions;
+  }
+
+  // Create a PaymentIntent with the amount, currency, and a payment method type.
+  //
+  // See the documentation [0] for the full list of supported parameters.
+  //
+  // [0] https://stripe.com/docs/api/payment_intents/create
+  try {
+    const paymentIntent = await stripe.paymentIntents.create(params);
+
+    // Send publishable key and PaymentIntent details to client
+    res.send({
+      clientSecret: paymentIntent.client_secret,
+    });
+  } catch (e) {
+    return res.status(400).send({
+      error: {
+        message: e.message,
+      },
+    });
+  }
 });
 
 // add products into the database
